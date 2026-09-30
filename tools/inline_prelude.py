@@ -10,14 +10,18 @@ taken from any committed emit makes a Linux emit byte-identical to the
 reference one, and a build here churns no emit. kernels/*/gen.sh runs it
 after slangc; it is idempotent.
 
-    python3 tools/inline_prelude.py <checkout>
+The emits of every root given are one population, as they were when they
+shared one checkout: a repository whose emits were all just regenerated
+takes its prelude from another's committed emit.
+
+    python3 tools/inline_prelude.py <root> [<root> ...]
 """
 import glob
 import os
 import sys
 
-root = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-emits = sorted(glob.glob(os.path.join(root, 'kernels', '*', 'cpp', '*_emit.cpp')))
+roots = sys.argv[1:] or [os.path.dirname(os.path.dirname(os.path.abspath(__file__)))]
+emits = sorted(p for root in roots for p in glob.glob(os.path.join(root, 'kernels', '*', 'cpp', '*_emit.cpp')))
 prelude = None
 for path in emits:
     s = open(path).read()
@@ -29,7 +33,7 @@ for path in emits:
         prelude = '\n'.join(lines[:end])
         break
 if prelude is None:
-    sys.exit('no committed emit with the inline prelude found under kernels/*/cpp')
+    sys.exit('no committed emit with the inline prelude found under kernels/*/cpp of %s' % ', '.join(roots))
 changed = 0
 for path in emits:
     s = open(path).read()
