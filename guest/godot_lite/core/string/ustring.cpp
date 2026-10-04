@@ -33,26 +33,26 @@ static void _append_utf8(std::string &r_s, char32_t p_c) {
 }
 
 uint32_t String::hash() const {
-	return hash_djb2_buffer((const uint8_t *)_s.data(), int(_s.size()));
+	return hash_djb2_buffer((const uint8_t *)_s().data(), int(_s().size()));
 }
 
 String String::operator+(char32_t p_c) const {
 	String r = *this;
-	_append_utf8(r._s, p_c);
+	_append_utf8(r._m(), p_c);
 	return r;
 }
 
 String &String::operator+=(char32_t p_c) {
-	_append_utf8(_s, p_c);
+	_append_utf8(_m(), p_c);
 	return *this;
 }
 
 double String::to_float() const {
-	return strtod(_s.c_str(), nullptr);
+	return strtod(_s().c_str(), nullptr);
 }
 
 int64_t String::to_int() const {
-	return strtoll(_s.c_str(), nullptr, 10);
+	return strtoll(_s().c_str(), nullptr, 10);
 }
 
 String String::num(double p_num, int p_decimals) {
@@ -84,8 +84,8 @@ String String::num_int64(int64_t p_num, int p_base, bool p_capitalize_hex) {
 
 String String::num_real(double p_num, bool p_trailing) {
 	String s = num(p_num);
-	if (p_trailing && s._s.find_first_of(".einf") == std::string::npos) {
-		s._s += ".0";
+	if (p_trailing && s._s().find_first_of(".einf") == std::string::npos) {
+		s._m() += ".0";
 	}
 	return s;
 }
@@ -94,7 +94,7 @@ String String::sprintf(const Array &p_values, bool *r_error) const {
 	std::string out;
 	int value_index = 0;
 	bool error = false;
-	const std::string &f = _s;
+	const std::string &f = _s();
 	for (size_t i = 0; i < f.size(); i++) {
 		if (f[i] != '%') {
 			out += f[i];
