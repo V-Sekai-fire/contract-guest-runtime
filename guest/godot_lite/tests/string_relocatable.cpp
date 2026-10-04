@@ -7,10 +7,9 @@
 #include <cstring>
 #include <new>
 
-template <typename T>
-static bool points_into_itself(const T &p_s, const char *p_data) {
-	const char *lo = reinterpret_cast<const char *>(&p_s);
-	return p_data >= lo && p_data < lo + sizeof(T);
+static bool points_into(const void *p_block, size_t p_size, const char *p_data) {
+	const char *lo = static_cast<const char *>(p_block);
+	return p_data >= lo && p_data < lo + p_size;
 }
 
 template <typename T>
@@ -20,7 +19,6 @@ static bool survives_realloc(const char *p_text) {
 	void *moved = malloc(sizeof(T));
 	memcpy(moved, block, sizeof(T));
 	memset(block, 0xAB, sizeof(T));
-	free(block);
 	T *m = static_cast<T *>(moved);
 	const char *data = nullptr;
 	if constexpr (std::is_same_v<T, std::string>) {
@@ -28,10 +26,12 @@ static bool survives_realloc(const char *p_text) {
 	} else {
 		data = m->get_data();
 	}
-	const bool ok = !points_into_itself(*m, data) && strcmp(data, p_text) == 0;
+	const bool ok = !points_into(block, sizeof(T), data) && !points_into(moved, sizeof(T), data) &&
+			strcmp(data, p_text) == 0;
 	if (ok) {
 		m->~T();
 	}
+	free(block);
 	free(moved);
 	(void)s;
 	return ok;
