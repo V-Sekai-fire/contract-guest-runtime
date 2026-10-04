@@ -964,7 +964,27 @@ static Variant refs_usets(int64_t n) {
 		g_dev.free_rid(s);
 		++made;
 	}
-	return text("uniform_sets made=" + std::to_string(made) + " of " + std::to_string(n));
+	return text("uniform_sets made=" + std::to_string(made) + " of " + std::to_string(n) + " permanent=" +
+			std::to_string(g_dev.permanent_slots()));
+}
+
+// The control for refs_usets: the same sets, never freed, so their permanent slots run out.
+static Variant refs_usets_kept(int64_t n) {
+	if (!g_rc_ok) {
+		return text("FAIL refs_setup first");
+	}
+	int64_t made = 0;
+	for (int64_t i = 0; i < n; ++i) {
+		::RID s = g_dev.uniform_set(g_sax.shader,
+				{ { 0, rdc::UNIFORM_TYPE_UNIFORM_BUFFER, g_pp[0].params }, { 1, rdc::UNIFORM_TYPE_STORAGE_BUFFER, g_pp[0].ones },
+						{ 2, rdc::UNIFORM_TYPE_STORAGE_BUFFER, g_pp[0].a }, { 3, rdc::UNIFORM_TYPE_STORAGE_BUFFER, g_pp[0].b } });
+		if (!s.index) {
+			break;
+		}
+		++made;
+	}
+	return text("uniform_sets made=" + std::to_string(made) + " of " + std::to_string(n) + " permanent=" +
+			std::to_string(g_dev.permanent_slots()));
 }
 
 // Probe 13's arms: rdc::Device ends a compute list that a killed vmcall
@@ -1361,6 +1381,7 @@ int main() {
 	ADD_API_FUNCTION(sm_pump, "String", "", "Advance the state machine once");
 	ADD_API_FUNCTION(big_buffer, "String", "int bytes, bool direct", "Empty buffer + clear + whole-buffer saxpby + readback");
 	ADD_API_FUNCTION(refs_usets, "String", "int n", "Create and free n uniform sets in one call");
+	ADD_API_FUNCTION(refs_usets_kept, "String", "int n", "Create n uniform sets and keep them (the slot gate's control)");
 	ADD_API_FUNCTION(p_list_end, "String", "", "End a compute list a failed call left open");
 	ADD_API_FUNCTION(p_recovery, "String", "bool on", "rd_compute's compute-list recovery on or off (gate hook)");
 	ADD_API_FUNCTION(p_rd_close, "String", "", "Free the guest's RenderingDevice");

@@ -184,6 +184,11 @@ static ::RID as_rid(const Variant &v) {
 	return v.operator ::RID();
 }
 
+// A permanent index is negative as 32 bits; an RID carries it zero-extended in 64.
+static bool permanent_index(int64_t index) {
+	return Variant::is_permanent_index(unsigned(uint64_t(index)));
+}
+
 bool Device::fail(const char *why) {
 	err_ = std::string("FAIL at ") + step_ + ": " + why;
 	return false;
@@ -204,14 +209,14 @@ bool Device::fail(const char *why) {
 	::RID r = as_rid(p);
 	if (r.index == 0) {
 		fail("null RID");
-	} else if (r.index < 0) {
+	} else if (permanent_index(r.index)) {
 		++permanent_live_;
 	}
 	return r;
 }
 
 void Device::forget(::RID rid) {
-	if (rid.index >= 0) {
+	if (!permanent_index(rid.index)) {
 		return; // null, or a per-call index that dies with the call anyway
 	}
 	Variant held(rid);
