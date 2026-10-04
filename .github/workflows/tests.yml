@@ -1,0 +1,29 @@
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main/main]
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  string-relocatable:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx: [clang++, g++]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: >
+          ${{ matrix.cxx }} -std=c++17 -O1
+          -Iguest/godot_lite -Ivendor/godot-core-subset
+          -include guest/godot_lite/gdl_prelude.h
+          guest/godot_lite/tests/string_relocatable.cpp -o string_reloc
+      - name: Run
+        run: ./string_reloc
