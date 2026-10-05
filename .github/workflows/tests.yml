@@ -3,7 +3,7 @@ name: tests
 on:
   pull_request:
   push:
-    branches: [main/main]
+    branches: [main]
   merge_group:
 
 concurrency:
@@ -27,3 +27,21 @@ jobs:
           guest/godot_lite/tests/string_relocatable.cpp -o string_reloc
       - name: Run
         run: ./string_reloc
+
+  standalone-guest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools from apt
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q clang lld cmake ninja-build
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          elixir-version: "1.17"
+      - name: The riscv64 sysroot
+        run: git clone -q --depth 1 https://github.com/V-Sekai-fire/repository-riscv64-sysroot "$RUNNER_TEMP/riscv64-sysroot"
+      - name: A guest ELF built outside the pen, and its controls
+        run: elixir tools/check_standalone.exs --sysroot="$RUNNER_TEMP/riscv64-sysroot"
