@@ -8,9 +8,9 @@ A guest repository builds its RISC-V ELF against this runtime by including `cmak
 
 ## Build and check
 
-    elixir tools/check_standalone.exs
+    elixir tools/check_standalone.exs --sysroot=<repository-riscv64-sysroot>
 
-It builds a standalone guest through the same module and checks the ELF, with a control for each check. It needs the riscv64 sysroot; the comment at the top of the script lists its arguments.
+It builds a standalone guest through the same module and checks the ELF, with a control for each check. `RISCV64_SYSROOT` can stand in for `--sysroot`, and `cmake`, `ninja`, `clang++` and `ld.lld` must be on `PATH`.
 
 ## Licence
 
