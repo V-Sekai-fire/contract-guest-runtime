@@ -1,8 +1,5 @@
-# The shared guest build: sandbox_api, rd_compute, pump, add_stage_elf and,
-# with GUEST_RUNTIME_GGML, ggml and ggml_rd. Include it after project(), configured
-# with the riscv64 sysroot's toolchain file (repository-riscv64-sysroot).
-# Optional inputs: WEFT_ROOT, GGML_RD_ROOT, GGML_ROOT, GUEST_RUNTIME_GGML,
-# GUEST_RUNTIME_GGML_COMMIT, GUEST_ELF_DIR (defaults below).
+# sandbox_api, rd_compute, pump, add_stage_elf, and ggml and ggml_rd under GUEST_RUNTIME_GGML.
+# Include it after project(), configured with repository-riscv64-sysroot's toolchain.cmake.
 include_guard(GLOBAL)
 
 if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64" OR NOT CMAKE_SYSROOT)
@@ -41,14 +38,12 @@ if(CMAKE_C_COMPILER_TARGET AND NOT CMAKE_ASM_COMPILER_TARGET)
 endif()
 enable_language(ASM)
 
-# Sources are named relative to their repository, so an ELF names neither the
-# machine nor the checkout it was built in. Maps added before the include reach every target.
+# An ELF names sources relative to their repository; maps added before the include reach every target.
 add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=" "-ffile-prefix-map=${GUEST_RUNTIME_ROOT}/=")
 if(GUEST_RUNTIME_GGML)
 	add_compile_options("-ffile-prefix-map=${GGML_RD_ROOT}/=" "-ffile-prefix-map=${GGML_ROOT}/=vendor/ggml/")
 endif()
 
-# The guest includes <api.hpp> only; nothing is downloaded.
 set(DOWNLOAD_RUNTIME_API OFF CACHE BOOL "" FORCE)
 add_subdirectory(${GUEST_RUNTIME_ROOT}/vendor/sandbox-api/cmake sandbox_api)
 
@@ -56,7 +51,6 @@ add_library(rd_compute STATIC ${GUEST_RUNTIME_ROOT}/guest/rd_compute.cpp)
 target_include_directories(rd_compute PUBLIC ${GUEST_RUNTIME_ROOT}/guest)
 target_link_libraries(rd_compute PUBLIC sandbox_api)
 
-# One ELF per stage, copied to ${GUEST_ELF_DIR}/<name>.elf.
 function(add_stage_elf name)
 	add_sandbox_program(${name} ${ARGN})
 	target_link_libraries(${name} PRIVATE rd_compute -lm -lstdc++)
@@ -84,7 +78,6 @@ foreach(need "${GGML_ROOT}/CMakeLists.txt" "${GGML_RD_ROOT}/guest/ggml-rd/ggml-r
 	endif()
 endforeach()
 
-# ggml static at rv64gc, one thread, no dynamic backends, OpenMP, llamafile, RVV or Zfh.
 foreach(opt GGML_NATIVE GGML_BACKEND_DL BUILD_SHARED_LIBS GGML_OPENMP GGML_LLAMAFILE
 		GGML_RVV GGML_RV_ZFH GGML_RV_ZVFH GGML_RV_ZICBOP GGML_RV_ZIHINTPAUSE GGML_RV_ZVFBFWMA
 		GGML_BUILD_TESTS GGML_BUILD_EXAMPLES GGML_CCACHE)
