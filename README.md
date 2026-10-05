@@ -1,5 +1,17 @@
 # contract-guest-runtime
 
-The godot-sandbox guest runtime the stage guests share: sandbox API, rd_compute, fiber and pump, godot_lite, slang-rt.
+The godot-sandbox runtime the stage guest ELFs share: sandbox API, compute dispatch, fibers, a reduced engine core and the shader runtime.
 
-Split out of `interactor-dress-on` at `310b52e` with its history (`git subtree`). It sits at `2-contract/guest-runtime` in the goal manifest (`contract-manifest-taskweft`), and finds the repositories it builds against as sibling checkouts at their manifest paths. A guest repository builds its ELF by including `cmake/guest_runtime.cmake` after `project()`, configured with the `toolchain.cmake` of `repository-riscv64-sysroot`. `elixir tools/check_standalone.exs --sysroot=<dir>` builds `tests/standalone` that way, and `transport-meshing-pen` builds its stage ELFs through the same module.
+## What it is for
+
+A guest repository builds its RISC-V ELF against this runtime by including `cmake/guest_runtime.cmake` after `project()`, with the toolchain from `repository-riscv64-sysroot`. The runtime finds the repositories it builds against as sibling checkouts at their goal-manifest paths.
+
+## Build and check
+
+    elixir tools/check_standalone.exs
+
+It builds a standalone guest through the same module and checks the ELF, with a control for each check. It needs the riscv64 sysroot; the comment at the top of the script lists its arguments.
+
+## Licence
+
+No licence file sits at the root. The vendored and derived trees carry their own, recorded in each tree's `CITATION.cff`: the engine core subsets are MIT and the sandbox API is BSD-3-Clause.
