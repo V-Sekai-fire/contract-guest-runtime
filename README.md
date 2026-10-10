@@ -14,4 +14,4 @@ It builds a standalone guest through the same module and checks the ELF, with a 
 
 ## Licence
 
-No licence file sits at the root. The vendored and derived trees carry their own, recorded in each tree's `CITATION.cff`: the engine core subsets are MIT and the sandbox API is BSD-3-Clause.
+MIT. See [LICENSE](LICENSE). The vendored and derived trees carry their own, recorded in each tree's `CITATION.cff`: the engine core subsets are MIT and the sandbox API is BSD-3-Clause.
