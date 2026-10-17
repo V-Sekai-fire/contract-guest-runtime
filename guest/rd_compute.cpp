@@ -184,6 +184,13 @@ static ::RID as_rid(const Variant &v) {
 	return v.operator ::RID();
 }
 
+// The host stores a permanent index as an unsigned 32-bit value in the
+// Variant's 64-bit slot (godot-sandbox api_vclone), so the RID's index is
+// positive and only its low 32 bits carry the sign.
+static bool is_permanent(::RID rid) {
+	return Variant::is_permanent_index(unsigned(uint64_t(rid.index)));
+}
+
 bool Device::fail(const char *why) {
 	err_ = std::string("FAIL at ") + step_ + ": " + why;
 	return false;
@@ -204,14 +211,14 @@ bool Device::fail(const char *why) {
 	::RID r = as_rid(p);
 	if (r.index == 0) {
 		fail("null RID");
-	} else if (r.index < 0) {
+	} else if (is_permanent(r)) {
 		++permanent_live_;
 	}
 	return r;
 }
 
 void Device::forget(::RID rid) {
-	if (rid.index >= 0) {
+	if (!is_permanent(rid)) {
 		return; // null, or a per-call index that dies with the call anyway
 	}
 	Variant held(rid);
