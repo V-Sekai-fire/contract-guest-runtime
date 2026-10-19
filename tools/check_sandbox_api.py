@@ -84,7 +84,7 @@ def self_test():
          good, good.replace("#define ECALL_LAST (GAME_API_BASE + 70)\n", ""), False),
         ("a renumbered ECALL is rejected", good.replace("+ 67", "+ 66"), good, False),
         ("an ECALL only the addon has is rejected",
-         good, good + "#define ECALL_PACKED_ACQUIRE (GAME_API_BASE + 68)\n", False),
+         good, good + "#define ECALL_EXTRA (GAME_API_BASE + 68)\n", False),
         ("a different GAME_API_BASE is rejected", good.replace("500", "400"), good, False),
         ("a trailing comment is ignored", good.replace("+ 0)", "+ 0) // print"), good, True),
     ]

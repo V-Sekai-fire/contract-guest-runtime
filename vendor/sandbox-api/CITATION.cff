@@ -33,5 +33,5 @@ authors:
     website: https://github.com/libriscv/godot-sandbox
   - name: V-Sekai-fire
 repository-code: https://github.com/V-Sekai-fire/godot-sandbox
-commit: 5f19275e1c6f9e15c7564e564ecd22d829a4fc13
+commit: 638592b61c5d46055cc0266da5f053dc62e17116
 license: BSD-3-Clause
