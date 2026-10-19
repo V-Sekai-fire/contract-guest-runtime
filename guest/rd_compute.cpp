@@ -211,6 +211,12 @@ bool Device::fail(const char *why) {
 	::RID r = as_rid(p);
 	if (r.index == 0) {
 		fail("null RID");
+	} else if (permanent_rids_ && !is_permanent(r)) {
+		// The host's permanent pool is full: the RID is still a per-call index and
+		// names nothing after this call. Stop here, by name, rather than hand on an
+		// RID that a later call finds empty.
+		fail("permanent RID pool full (make_permanent kept a per-call index)");
+		return ::RID();
 	} else if (is_permanent(r)) {
 		++permanent_live_;
 	}
